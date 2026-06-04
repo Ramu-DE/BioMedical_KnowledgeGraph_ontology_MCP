@@ -12,6 +12,7 @@ from biomedical_kg_mcp.mcp_servers.neo4j_aura_server import Neo4jAuraMCPServer
 from biomedical_kg_mcp.mcp_servers.neptune_server import NeptuneMCPServer
 from biomedical_kg_mcp.mcp_servers.graph_sync_server import GraphSyncMCPServer
 from biomedical_kg_mcp.mcp_servers.lakehouse_server import LakehouseMCPServer
+from biomedical_kg_mcp.mcp_servers.ontosphere_bridge import OntosphereBridge
 
 from biomedical_kg_mcp.services.cache_service import CacheService
 from biomedical_kg_mcp.services.auth_service import AuthService
@@ -83,6 +84,11 @@ class MCPPlatform:
             iri_minter=self.iri_minter,
             shacl_validator=self.shacl_validator,
             llm_service=self.llm_service
+        )
+        
+        # Ontosphere Bridge
+        self.ontosphere_bridge = OntosphereBridge(
+            ontosphere_url="https://thhanke.github.io/ontosphere/"
         )
 
     async def handle_request(self, request: dict) -> dict:
@@ -171,6 +177,8 @@ class MCPPlatform:
             return self.graph_sync_server
         elif method.startswith("lakehouse_"):
             return self.lakehouse_server
+        elif method.startswith("ontosphere_"):
+            return self.ontosphere_bridge
         return None
 
     async def close(self):
@@ -178,3 +186,4 @@ class MCPPlatform:
         await self.redis.close()
         await self.neo4j_server.client.close()
         await self.neptune_server.client.aclose()
+        await self.ontosphere_bridge.client.close()
