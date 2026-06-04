@@ -1,0 +1,127 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "biomedical-kg-mcp"
+version = "0.1.0"
+description = "Multi-server MCP platform bridging Neo4j Aura DB with AWS Neptune for BioMedical Knowledge Graph"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "BioMedical KG Team"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "neo4j>=5.0",
+    "boto3>=1.28.0",
+    "botocore>=1.31.0",
+    "requests-aws4auth>=1.2.0",
+    "pyshacl>=0.25.0",
+    "rdflib>=7.0.0",
+    "redis[hiredis]>=5.0.0",
+    "httpx>=0.25.0",
+    "databricks-sdk>=0.20.0",
+    "numpy>=1.24.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+ml = [
+    "sentence-transformers>=2.2.0",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "pytest-hypothesis>=0.19.0",
+    "hypothesis>=6.92.0",
+    "moto[all]>=4.2.0",
+    "fakeredis>=2.20.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.7.0",
+    "types-redis>=4.6.0",
+]
+
+[project.scripts]
+biomedkg-mcp = "biomedical_kg_mcp.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["src/biomedical_kg_mcp/tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --strict-markers"
+markers = [
+    "property: Property-based tests using Hypothesis",
+    "integration: Integration tests requiring external services",
+    "slow: Slow running tests",
+]
+asyncio_mode = "auto"
+
+[tool.hypothesis]
+max_examples = 100
+deadline = None
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # function calls in argument defaults
+]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "neo4j.*",
+    "pyshacl.*",
+    "rdflib.*",
+    "databricks.*",
+    "moto.*",
+    "fakeredis.*",
+]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["src/biomedical_kg_mcp"]
+omit = ["*/tests/*", "*/conftest.py"]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
